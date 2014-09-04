@@ -1,0 +1,29 @@
+---
+
+- hosts: home:office
+  sudo: yes
+  tasks:
+      - name: install_java
+        yum: name={{ item }} state=latest
+        with_items:
+            - java-1.7.0-openjdk
+        tags: install
+      - name: conf_yum_repo_elasticsearch
+        copy: src=./files/elasticsearch.repo dest=/etc/yum.repos.d/ owner=root group=root mode=644
+        tags: conf_yum
+      - name: install_elasticsearch
+        yum: name={{ item }} state=latest
+        with_items:
+            - elasticsearch
+        tags: install
+      - name: conf_elasticsearch_init
+        copy: src=./files/elasticsearch dest=/etc/init.d/ owner=root group=root mode=755
+        tags: conf_elasticsearch_init
+      - name: service_elasticsearch
+        service: name={{ item }}  state=started enabled=yes
+        with_items:
+            - elasticsearch
+  handlers:
+      - name: restart_elasticsearch
+        service: name=elasticsearch state=restarted
+  

@@ -1,0 +1,7 @@
+---
+- hosts: home:office
+  sudo: yes
+  tasks:
+    - name: ssh-key-deploy
+    authorized_key: user=t-shuichi
+                      key="{{ lookup('file', '~/.ssh/id_rsa.pub') }}"

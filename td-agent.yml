@@ -1,0 +1,32 @@
+---
+
+- hosts: home:office
+  sudo: yes
+  tasks:
+      - name: install_td-agent
+        shell: curl -L http://toolbelt.treasuredata.com/sh/install-redhat.sh | sh
+        tags: install
+      - name: install_dev_package
+        yum: name={{ item }} state=latest
+        with_items:
+            - gcc
+            - libcurl-devel
+        tags: install
+      - name: install_td-agent_plugins
+        shell: /usr/lib64/fluent/ruby/bin/fluent-gem install {{ item }}
+        with_items:
+            - fluent-plugin-elasticsearch
+        tags: install_plugin
+      - name: conf_td-agent
+        copy: src=./files/td-agent.conf dest=/etc/td-agent/ owner=root group=root mode=644
+        tags: conf
+        notify: restart_td-agent
+      - name: service_td-agent
+        service: name={{ item }}  state=started enabled=yes
+        with_items:
+            - td-agent
+        tags: service
+  handlers:
+      - name: restart_td-agent
+        service: name=td-agent state=restarted
+  
